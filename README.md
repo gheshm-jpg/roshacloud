@@ -2,6 +2,10 @@
 
 A personal cloud file storage project built with FileCloud on an Ubuntu Amazon EC2 instance, Amazon S3, IAM access controls, DuckDNS, and Let's Encrypt HTTPS.
 
+## cloud access
+
+[Open the FileCloud service](https://roshafiles.duckdns.org). File access requires an authorized account.
+
 ## project overview
 
 Completed in June 2026.
