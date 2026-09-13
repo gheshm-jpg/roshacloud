@@ -1,48 +1,58 @@
-# aws filecloud project
+# Roshacloud — FileCloud on AWS
 
-A personal cloud file storage project built with FileCloud on an Ubuntu Amazon EC2 instance, Amazon S3, IAM access controls, DuckDNS, and Let's Encrypt HTTPS.
+A personal cloud-storage deployment combining FileCloud on Ubuntu EC2, Amazon S3, IAM access controls, and HTTPS through a DuckDNS hostname. The project focuses on configuring and connecting cloud infrastructure to support authenticated file access.
 
-## cloud access
+**Stack:** AWS EC2 · S3 · IAM · Ubuntu Linux · FileCloud · DuckDNS · Let's Encrypt
 
-[Open the FileCloud service](https://roshafiles.duckdns.org). File access requires an authorized account.
+[Architecture](docs/architecture.md) · [Setup guide](docs/setup.md) · [Validation checklist](docs/validation.md) · [FileCloud service](https://roshafiles.duckdns.org)
 
-## project overview
+The service requires an authorized account. The documentation can be reviewed without signing in to FileCloud.
 
-Completed in June 2026.
+## Project scope
 
-FileCloud provides the web interface and handles user authentication and file permissions. The Ubuntu EC2 instance runs the application, while an S3 bucket stores managed files. IAM policies control the application's AWS access. DuckDNS gives the server a consistent hostname, and Let's Encrypt provides the HTTPS certificate with automatic renewal.
+The deployment brings together compute, object storage, access control, DNS updates, and certificate renewal. FileCloud supplies the application, authentication, and file-permission features. This repository contains the deployment walkthrough, architecture notes, and example IAM policies.
 
-## how it works
-
-1. A user opens the DuckDNS hostname in a browser.
-2. DNS resolves the hostname to the EC2 instance's public IP address.
-3. The browser establishes an HTTPS connection to the server.
-4. FileCloud authenticates the user and checks application permissions.
-5. FileCloud reads or writes files in S3 using its authorized AWS identity.
-6. Scheduled DNS updates track public IP changes, and certificate renewal keeps HTTPS available.
-
-[View the architecture diagram](docs/architecture.md).
-
-## setup guide
-
-Follow the [setup guide](docs/setup.md) to provision EC2 and S3, configure IAM, install FileCloud, set up DuckDNS, and enable HTTPS renewal. The guide describes a reproduction path; it is not an export of the original server configuration.
-
-## tested functionality
-
-The project owner reports that uploads, downloads, and certificate renewal were tested successfully for the completed project. Original test logs are not included. See the [validation checklist](docs/validation.md) to repeat these checks on a new deployment.
-
-## repository contents
-
-| path | purpose |
+| Component | Role |
 | --- | --- |
-| `docs/architecture.md` | component diagram and request flow |
-| `docs/setup.md` | reproduction instructions |
-| `docs/validation.md` | verification and troubleshooting |
-| `examples/s3-policy.json` | bucket-scoped IAM policy template |
-| `examples/ec2-trust-policy.json` | EC2 role trust policy template |
+| Ubuntu on EC2 | Runs the FileCloud application |
+| Amazon S3 | Stores files managed by FileCloud |
+| IAM | Controls the application's AWS permissions |
+| DuckDNS | Provides a consistent hostname as the public IP changes |
+| Let's Encrypt | Provides the HTTPS certificate and renewal mechanism |
 
-## security and scope
+## Request flow
 
-Only project documentation and placeholder configuration examples are included. AWS credentials, access keys, secret keys, API tokens, SSH keys, TLS private keys, and personal files are excluded. Supply sensitive values privately on the deployment host.
+```mermaid
+flowchart LR
+    U[Browser] -->|DNS lookup| D[DuckDNS]
+    U -->|HTTPS| E[FileCloud on Ubuntu EC2]
+    E -->|Authenticated file operations| S[Amazon S3]
+    I[IAM permissions] -.-> E
+```
 
-This is a personal single-instance deployment. S3 file storage does not replace backups of FileCloud's database and configuration. The documented reproduction path uses an EC2 IAM role; the original IAM authentication method and software versions were not recorded here.
+FileCloud authenticates each user and checks file permissions before accessing managed storage. Scheduled DNS updates and certificate renewal support continued access as infrastructure details change. See the [architecture notes](docs/architecture.md) for more detail.
+
+## Reproduce the deployment
+
+Follow the [setup guide](docs/setup.md) to provision compute and storage, configure AWS access, install FileCloud, and set up DNS and HTTPS. The guide describes a reproduction path rather than an exact export of the original server. Its IAM-role approach is documented explicitly; the original authentication method and software versions were not recorded in this repository.
+
+| File | Purpose |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | Components and request flow |
+| [docs/setup.md](docs/setup.md) | Deployment instructions |
+| [docs/validation.md](docs/validation.md) | Functional checks and troubleshooting |
+| [examples/s3-policy.json](examples/s3-policy.json) | Bucket-scoped IAM policy template |
+| [examples/ec2-trust-policy.json](examples/ec2-trust-policy.json) | EC2 role trust policy template |
+
+Replace example values with your own resources and supply credentials privately on the deployment host.
+
+## Validation status
+
+The original project notes record completion in June 2026 and successful upload, download, and certificate-renewal checks. Historical test logs are not included. The [validation checklist](docs/validation.md) provides steps to repeat those checks and capture evidence on a deployment.
+
+## Design tradeoffs
+
+- A single EC2 instance keeps the deployment straightforward but does not provide application high availability.
+- S3 stores managed files; separate backups are needed for FileCloud's database and configuration.
+- Dynamic DNS provides a stable hostname, while continued access depends on the update job and instance availability.
+- The public repository contains documentation and placeholder configurations. Credentials, private keys, and user files belong outside version control.
